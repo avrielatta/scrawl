@@ -3,10 +3,10 @@
 
 #include <SDL3/SDL.h>
 
-#include "gapbuffer.h"
+#include "linebuffer.h"
 
-GapBuffer* gb_CreateGapBuffer(void) {
-    GapBuffer *buf = malloc(sizeof(GapBuffer));
+LineBuffer* lb_CreateBuffer(void) {
+    LineBuffer *buf = malloc(sizeof(LineBuffer));
     buf->pos = 0;
     buf->capacity = BUFFER_GAP;
     buf->gapEnd = buf->capacity - 2;
@@ -20,7 +20,7 @@ GapBuffer* gb_CreateGapBuffer(void) {
     return buf;
 }
 
-void gb_Grow(GapBuffer *buffer, const char *input) {
+void lb_Grow(LineBuffer *buffer, const char *input) {
     // store old trailing data in a temporary string
     char temp[256];
     u16 j = 0;
@@ -52,13 +52,13 @@ void gb_Grow(GapBuffer *buffer, const char *input) {
     buffer->gapEnd += BUFFER_GAP;
 }
 
-void gb_Left(GapBuffer *buffer) {
+void lb_Left(LineBuffer *buffer) {
     buffer->buf[buffer->gapEnd--] = buffer->buf[buffer->pos - 1];
     buffer->buf[buffer->pos--] = EMPTY;
     buffer->buf[buffer->pos] = CURSOR;
 }
 
-void gb_Right(GapBuffer *buffer) {
+void lb_Right(LineBuffer *buffer) {
     if (buffer->gapEnd < buffer->capacity - 2) {
         if (buffer->buf[buffer->gapEnd + 1] != EMPTY) {
             buffer->buf[buffer->pos++] = buffer->buf[buffer->gapEnd + 1];
@@ -68,6 +68,6 @@ void gb_Right(GapBuffer *buffer) {
     }
 }
 
-void gb_Delete(GapBuffer *buffer) {
+void lb_Delete(LineBuffer *buffer) {
     buffer->buf[++buffer->gapEnd] = EMPTY;
 }

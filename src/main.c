@@ -8,7 +8,7 @@
 
 #include "txt.h"
 #include "edit.h"
-#include "gapbuffer.h"
+#include "linebuffer.h"
 #include "types.h"
 
 static SDL_Window *window = NULL;
@@ -17,7 +17,7 @@ static SDL_Renderer *renderer = NULL;
 Font *font;
 Text text;
 SDL_Texture *tex;
-GapBuffer *buffer;
+LineBuffer *buffer;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
     SDL_SetAppMetadata("Scrawl", "0.1.0", "com.avrielatta.scrawl");
@@ -48,7 +48,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
         return SDL_APP_FAILURE;
     }
 
-    buffer = gb_CreateGapBuffer();
+    buffer = lb_CreateBuffer();
 
     return SDL_APP_CONTINUE;
 }
@@ -92,8 +92,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     SDL_SetRenderDrawColorFloat(renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
 
     SDL_RenderClear(renderer);
-
-    
 
     if (tex) {
         SDL_FRect dstrct = (SDL_FRect){ 0, 0, (f32)text.vw, (f32)text.vh };

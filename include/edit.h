@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 #include "txt.h"
-#include "gapbuffer.h"
+#include "linebuffer.h"
 
 typedef enum e_VimMode {
     NORMAL,
@@ -9,5 +9,5 @@ typedef enum e_VimMode {
     VISUAL
 } e_VimMode;
 
-void input_HandleTextInput(const char *input, GapBuffer *buf);
-void input_HandleKeyDown(SDL_KeyboardEvent event, GapBuffer *buffer);
+void input_HandleTextInput(const char *input, LineBuffer *buf);
+void input_HandleKeyDown(SDL_KeyboardEvent event, LineBuffer *buffer);

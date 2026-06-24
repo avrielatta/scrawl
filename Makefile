@@ -60,7 +60,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDLIBS) $^ -o $@
+	$(CC) -fsanitize=address $(LDLIBS) $^ -o $@
 
 -include $(DEPS)
 
