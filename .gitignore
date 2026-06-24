@@ -53,3 +53,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# vendored libraries
+vendored/*
+
+# ctags for vim
+tags
