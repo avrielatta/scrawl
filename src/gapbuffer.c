@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <SDL3/SDL.h>
+
 #include "gapbuffer.h"
 
 GapBuffer* gb_CreateGapBuffer(void) {
@@ -57,9 +59,13 @@ void gb_Left(GapBuffer *buffer) {
 }
 
 void gb_Right(GapBuffer *buffer) {
-    buffer->buf[buffer->pos++] = buffer->buf[buffer->gapEnd + 1];
-    buffer->buf[buffer->gapEnd++] = EMPTY;
-    buffer->buf[buffer->pos] = CURSOR;
+    if (buffer->gapEnd < buffer->capacity - 2) {
+        if (buffer->buf[buffer->gapEnd + 1] != EMPTY) {
+            buffer->buf[buffer->pos++] = buffer->buf[buffer->gapEnd + 1];
+            buffer->buf[++buffer->gapEnd] = EMPTY;
+            buffer->buf[buffer->pos] = CURSOR;
+        }
+    }
 }
 
 void gb_Delete(GapBuffer *buffer) {

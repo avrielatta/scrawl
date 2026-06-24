@@ -40,15 +40,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
 
     SDL_StartTextInput(window);
 
-    buffer = gb_CreateGapBuffer();
-
-    text = txt_CreateText("Fuck you, cracker!", (SDL_Color){ 255, 255, 255, 255 });
-
+    text = txt_CreateText("i", (SDL_Color){ 255, 255, 255, 255 });
     tex = txt_RenderTextToTexture(renderer, font, &text);
+
     if (tex == NULL) {
         SDL_Log("Error generating texture from surface: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    buffer = gb_CreateGapBuffer();
 
     return SDL_APP_CONTINUE;
 }
@@ -68,9 +68,18 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         }
     }
 
+    SDL_DestroyTexture(tex);
+    text = txt_CreateText(buffer->buf, (SDL_Color){ 255, 255, 255, 255 });
+    tex = txt_RenderTextToTexture(renderer, font, &text);
+
+    if (tex == NULL) {
+        SDL_Log("Error generating texture from surface: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
     system("clear");
     SDL_Log("%s", buffer->buf);
-    SDL_Log("pos: %d, gapEnd: %d", buffer->pos, buffer->gapEnd);
+    SDL_Log("pos: %d, gapEnd: %d, cap: %d", buffer->pos, buffer->gapEnd, buffer->capacity);
  
     return SDL_APP_CONTINUE;
 }
@@ -83,6 +92,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     SDL_SetRenderDrawColorFloat(renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
 
     SDL_RenderClear(renderer);
+
+    
 
     if (tex) {
         SDL_FRect dstrct = (SDL_FRect){ 0, 0, (f32)text.vw, (f32)text.vh };
