@@ -36,7 +36,7 @@ ifeq ($(OS),Windows_NT)
 	MKDIR		= if not exist $(BUILD_DIR) mkdir
 else
 	CFLAGS_DEBUG	+= -fsanitize=address -fsanitize-address-use-after-scope \
-					   -ftrapv
+					   -ftrapv -DDEBUG_MODE
 	LDLIBS_DEBUG	+= -fsanitize=address -fsanitize-address-use-after-scope
 	PKG_CONFIG	:= $(shell command -v pkg-config >/dev/null 2>&1 && echo "yes" || echo "no")
 	CLEAN		= $(RM) $(TARGET) && $(RM) -r $(BUILD_DIR)
