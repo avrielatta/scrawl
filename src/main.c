@@ -15,9 +15,9 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 
-Font *font;
-Text text;
-SDL_Texture *tex;
+TTF_Font *font;
+TTF_Text *text;
+TTF_TextEngine *textEngine;
 TextBlock *block;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
@@ -39,15 +39,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
         return SDL_APP_FAILURE;
     }
 
+    textEngine = TTF_CreateRendererTextEngine(renderer);
+
     SDL_StartTextInput(window);
 
-    text = txt_CreateText("placeholder", (SDL_Color){ 255, 255, 255, 255 });
-    tex = txt_RenderTextToTexture(renderer, font, &text);
-
-    if (tex == NULL) {
-        SDL_Log("Error generating texture from surface: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
+    text = TTF_CreateText(textEngine, font, "placeholder", 11);
 
     block = tb_CreateBlock();
 
@@ -69,19 +65,25 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         }
     }
 
-    SDL_DestroyTexture(tex);
-    text = txt_CreateText(block->lines[block->lineCount - 1]->buf, (SDL_Color){ 255, 255, 255, 255 });
-    tex = txt_RenderTextToTexture(renderer, font, &text);
+    TTF_DestroyText(text);
+    text = TTF_CreateText(
+            textEngine,
+            font,
+            block->lines[block->lineCount - 1]->buf,
+            strlen(block->lines[block->lineCount - 1]->buf)
+    );
 
-    if (tex == NULL) {
-        SDL_Log("Error generating texture from surface: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
+#ifdef DEBUG_MODE
     system("clear");
     SDL_Log("%s", block->lines[block->lineCount - 1]->buf);
-    SDL_Log("pos: %d, gapEnd: %d, cap: %d", block->lines[block->lineCount - 1]->pos, block->lines[block->lineCount - 1]->gapEnd, block->lines[block->lineCount - 1]->capacity);
- 
+    SDL_Log(
+            "pos: %d, gapEnd: %d, cap: %d",
+            block->lines[block->lineCount - 1]->pos,
+            block->lines[block->lineCount - 1]->gapEnd,
+            block->lines[block->lineCount - 1]->capacity
+    );
+#endif
+
     return SDL_APP_CONTINUE;
 }
 
@@ -94,10 +96,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     SDL_RenderClear(renderer);
 
-    if (tex) {
-        SDL_FRect dstrct = (SDL_FRect){ 0, 0, (f32)text.vw, (f32)text.vh };
-        SDL_RenderTexture(renderer, tex, NULL, &dstrct);
-    }
+    TTF_DrawRendererText(text, 0, 0);
 
     SDL_RenderPresent(renderer);
 
@@ -105,9 +104,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 }
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
-    TTF_CloseFont(font->font);
-    free(font);
-    SDL_DestroyTexture(tex);
+    TTF_DestroyText(text);
+    TTF_CloseFont(font);
     TTF_Quit();
     if (result) {}
 }
