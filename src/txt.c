@@ -14,7 +14,7 @@ Font* txt_FontInit(void) {
         return NULL;
     }
 
-    font->font = TTF_OpenFont("resources/fonts/Roboto/static/Roboto-Medium.ttf", 32.0f);
+    font->font = TTF_OpenFont("resources/fonts/Roboto/static/Roboto-Medium.ttf", 16.0f);
 
     return font;
 }

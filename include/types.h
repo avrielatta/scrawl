@@ -13,3 +13,7 @@ typedef int64_t s64;
 
 typedef float f32;
 typedef double f64;
+
+typedef struct Vec2 {
+    int x, y;
+} Vec2;

@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-#define BUFFER_CAP 1024
+#define BUFFER_CAP 64
 #define BUFFER_GAP 16
 #define EMPTY '_'
 #define CURSOR '#'
