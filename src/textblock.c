@@ -12,5 +12,7 @@ TextBlock* tb_CreateBlock(void) {
 }
 
 void tb_NewLine(TextBlock *block) {
-    block->lines[block->lineCount++] = lb_CreateBuffer();
+    if (block->lineCount < 8) {
+        block->lines[block->lineCount++] = lb_CreateBuffer();
+    }
 }
