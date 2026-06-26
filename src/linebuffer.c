@@ -7,69 +7,83 @@
 
 LineBuffer* lb_CreateBuffer(void) {
     LineBuffer *buf = malloc(sizeof(LineBuffer));
-    buf->pos = 0;
-    buf->capacity = BUFFER_GAP;
-    buf->gapEnd = buf->capacity - 2;
-    buf->buf = malloc(BUFFER_CAP);
+    buf->capacity = BUFFER_CAP;
+    buf->gapIndex = 0;
+    buf->preGapWidth = 0;
+    buf->postGapWidth = 0;
+    buf->gapEnd = buf->capacity - 1;
+    buf->gapWidth = buf->capacity;
+    buf->buf = malloc(BUFFER_CAP + 1);
+    buf->buf[BUFFER_CAP] = '\0';
 
-    for (int i = 0; i < buf->capacity - 1; i++) {
-        buf->buf[i] = EMPTY;
-    }
-
-    buf->buf[buf->capacity - 1] = '\0';
     return buf;
 }
 
-void lb_Grow(LineBuffer *buffer, const char *input) {
-    if (buffer->capacity < BUFFER_CAP) {
-        // store old trailing data in a temporary string
-        char temp[256];
-        u16 j = 0;
-        for (int i = buffer->pos + 1; i < buffer->capacity - 1; i++) {
-            temp[j] = buffer->buf[i];
-            j++;
-        }
-        // save value for later
-        u16 trailingCount = j;
-        j--;
-        // update to new capacity
-        buffer->capacity += BUFFER_GAP;
-        // new allocation
-        buffer->buf = realloc(buffer->buf, (size_t)buffer->capacity);
-        // init new space 
-        for (int i = buffer->pos; i < buffer->capacity - 2; i++) {
-            buffer->buf[i] = EMPTY;
-        }
-        // null terminate
-        buffer->buf[buffer->capacity - 1] = '\0';
-        // insert old trailing data at the end
-        for (int i = 0; i < trailingCount; i++) {
-            buffer->buf[(buffer->capacity - 2) - i] = temp[j];
-            j--;
-        }
-        // place new input
-        buffer->buf[buffer->pos++] = *input;
-        // move gap end
-        buffer->gapEnd += BUFFER_GAP;
+void lb_DestroyBuffer(LineBuffer* buffer) {
+    free(buffer->buf);
+    free(buffer);
+}
+
+void lb_AddChar(LineBuffer* buffer, const char* input) {
+    // set the char at current gap start to input
+    buffer->buf[buffer->gapIndex++] = *input;
+    // update the gap width variable
+    buffer->gapWidth = buffer->gapEnd - buffer->gapIndex;
+    // only draw cursor if not at line's end
+    if (buffer->gapIndex != buffer->gapEnd) {
+        buffer->buf[buffer->gapIndex] = CURSOR;
     }
+    // update gapwidth
+    buffer->gapWidth--;
+    // update pre gap width
+    buffer->preGapWidth++;
 }
 
 void lb_Left(LineBuffer *buffer) {
-    buffer->buf[buffer->gapEnd--] = buffer->buf[buffer->pos - 1];
-    buffer->buf[buffer->pos--] = EMPTY;
-    buffer->buf[buffer->pos] = CURSOR;
+    // move previous char to end of gap
+    buffer->buf[buffer->gapEnd--] = buffer->buf[buffer->gapIndex - 1];
+    // set gapindex to empty and decrement
+    buffer->buf[buffer->gapIndex--] = EMPTY;
+    // set new gapindex to cursor
+    buffer->buf[buffer->gapIndex] = CURSOR;
+    // update pregap width
+    buffer->preGapWidth--;
+    // update post gap width
+    buffer->postGapWidth++;
 }
 
 void lb_Right(LineBuffer *buffer) {
-    if (buffer->gapEnd < buffer->capacity - 2) {
-        if (buffer->buf[buffer->gapEnd + 1] != EMPTY) {
-            buffer->buf[buffer->pos++] = buffer->buf[buffer->gapEnd + 1];
-            buffer->buf[++buffer->gapEnd] = EMPTY;
-            buffer->buf[buffer->pos] = CURSOR;
-        }
+    // safety check for line end
+    if (buffer->gapEnd < buffer->capacity - 1) {
+        // move first char after gap to current gapindex and inc
+        buffer->buf[buffer->gapIndex++] = buffer->buf[buffer->gapEnd + 1];
+        // inc gap end pos and set to empty
+        buffer->buf[++buffer->gapEnd] = EMPTY;
+        // set new index to cursor
+        buffer->buf[buffer->gapIndex] = CURSOR;
+        // update pregap width
+        buffer->preGapWidth++;
+        // update post gap width
+        buffer->postGapWidth--;
     }
 }
 
+void lb_Backspace(LineBuffer* buffer) {
+    // set current index to empty and decrement
+    buffer->buf[buffer->gapIndex--] = EMPTY;
+    // set new index to cursor
+    buffer->buf[buffer->gapIndex] = CURSOR;
+    // update gap width
+    buffer->gapWidth++;
+    // update pre gap width
+    buffer->preGapWidth--;
+}
+
 void lb_Delete(LineBuffer *buffer) {
+    // overwrite first char after gap
     buffer->buf[++buffer->gapEnd] = EMPTY;
+    // update gapwidth
+    buffer->gapWidth++;
+    // update post gap width
+    buffer->postGapWidth--;
 }

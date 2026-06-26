@@ -4,4 +4,6 @@
 
 #include "types.h"
 
+#define FONT_SIZE 16.0f
+
 TTF_Font* txt_FontInit(void);

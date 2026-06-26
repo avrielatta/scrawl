@@ -1,3 +1,4 @@
+#pragma once
 #include "linebuffer.h"
 #include "types.h"
 
@@ -10,4 +11,4 @@ typedef struct TextBlock {
 } TextBlock;
 
 TextBlock* tb_CreateBlock(void);
-void tb_NewLine(TextBlock *block);
+void tb_NewLine(TextBlock *block, const char* input);
