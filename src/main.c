@@ -21,8 +21,6 @@ TTF_Text* postGapTexts[MAX_BLOCK_LINES];
 TTF_TextEngine *textEngine;
 TextBlock *block;
 
-int currentTextWidth;
-
 bool isNewlineNeeded;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
@@ -68,29 +66,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         }
     }
 
-    for (int i = 0; i < block->lineCount; i++) {
-        // create pregap text object
-        if (block->lines[i]->preGapWidth > 0) {
-            TTF_DestroyText(preGapTexts[i]);
-            preGapTexts[i] = TTF_CreateText(
-                    textEngine,
-                    font,
-                    block->lines[i]->buf,
-                    block->lines[i]->preGapWidth
-            );
-        }
-
-        // create post-gap text object
-        if (block->lines[i]->postGapWidth > 0) {
-            TTF_DestroyText(postGapTexts[i]);
-            postGapTexts[i] = TTF_CreateText(
-                    textEngine,
-                    font,
-                    &block->lines[i]->buf[block->lines[i]->gapEnd + 1],
-                    block->lines[i]->postGapWidth
-            );
-        }
-    }
+    tb_UpdateTexts(textEngine, block, preGapTexts, postGapTexts, font);
 
 #ifdef DEBUG_MODE
     system("clear");
@@ -107,24 +83,11 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
-    const double now = ((double)SDL_GetTicks()) / 1000.0f; // converts millliseconds to seconds
-    const float red = (float)(0.5f + 0.5f * SDL_sin(now));
-    const float green = (float)(0.5f + 0.5f * SDL_sin(now + SDL_PI_D * 2 / 3));
-    const float blue = (float)(0.5f + 0.5f * SDL_sin(now + SDL_PI_D * 4 / 3));
-    SDL_SetRenderDrawColorFloat(renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
+    SDL_SetRenderDrawColorFloat(renderer, 0.0f, 0.0f, 0.0f, SDL_ALPHA_OPAQUE_FLOAT);
 
     SDL_RenderClear(renderer);
 
-    for (int i = 0; i < block->lineCount; i++) {
-        if (block->lines[i]->preGapWidth > 0) {
-            // calculate width of the first section of text
-            TTF_GetTextSize(preGapTexts[i], &currentTextWidth, NULL);
-            // draw pre-gap text
-            TTF_DrawRendererText(preGapTexts[i], 0, i * FONT_SIZE);
-            // draw post-gap text
-            TTF_DrawRendererText(postGapTexts[i], currentTextWidth + 1, i * FONT_SIZE);
-        }
-    }
+    tb_RenderBlock(block, preGapTexts, postGapTexts);
 
     SDL_RenderPresent(renderer);
 
