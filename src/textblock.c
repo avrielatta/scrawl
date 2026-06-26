@@ -27,7 +27,7 @@ void tb_UpdateTexts(
 ) {
     for (int i = 0; i < block->lineCount; i++) {
         // create pregap text object
-        if (block->lines[i]->preGapWidth > 0) {
+        if (block->lines[i]->preGapWidth >= 0) {
             TTF_DestroyText(preGapTexts[i]);
             preGapTexts[i] = TTF_CreateText(
                     engine,
@@ -38,7 +38,7 @@ void tb_UpdateTexts(
         }
 
         // create post-gap text object
-        if (block->lines[i]->postGapWidth > 0) {
+        if (block->lines[i]->postGapWidth >= 0) {
             TTF_DestroyText(postGapTexts[i]);
             postGapTexts[i] = TTF_CreateText(
                     engine,
@@ -50,7 +50,7 @@ void tb_UpdateTexts(
     }
 }
 
-void tb_RenderBlock(TextBlock* block, TTF_Text* preGapTexts[], TTF_Text* postGapTexts[]) {
+int tb_RenderBlockText(TextBlock* block, TTF_Text* preGapTexts[], TTF_Text* postGapTexts[]) {
     int currentTextWidth;
 
     for (int i = 0; i < block->lineCount; i++) {
@@ -63,4 +63,40 @@ void tb_RenderBlock(TextBlock* block, TTF_Text* preGapTexts[], TTF_Text* postGap
             TTF_DrawRendererText(postGapTexts[i], currentTextWidth, i * FONT_SIZE);
         }
     }
+
+    return currentTextWidth;
+}
+
+void tb_RenderBlock(
+        SDL_Renderer* renderer,
+        TextBlock* block,
+        Cursor* cursor,
+        TTF_TextEngine* engine,
+        TTF_Font* font,
+        TTF_Text* preGapTexts[],
+        TTF_Text* postGapTexts[]
+) {
+    int cursorX = tb_RenderBlockText(block, preGapTexts, postGapTexts);
+    tb_RenderCursor(renderer, cursor, cursorX, block);
+}
+
+/* CURSOR FUNCTIONS */
+
+Cursor* tb_CreateCursor(float w, float h) {
+    Cursor* newCursor = malloc(sizeof(Cursor));
+    newCursor->rect.x = 0.0f;
+    newCursor->rect.y = 0.0f;
+    newCursor->rect.w = w;
+    newCursor->rect.h = h;
+
+    return newCursor;
+}
+
+void tb_DestroyCursor(Cursor* cursor) {
+    free(cursor);
+}
+
+void tb_RenderCursor(SDL_Renderer* renderer, Cursor* cursor, int xPos, TextBlock* block) {
+    cursor->rect.x = xPos;
+    SDL_RenderRect(renderer, &cursor->rect);
 }

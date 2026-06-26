@@ -20,6 +20,7 @@ TTF_Text* preGapTexts[MAX_BLOCK_LINES];
 TTF_Text* postGapTexts[MAX_BLOCK_LINES];
 TTF_TextEngine *textEngine;
 TextBlock *block;
+Cursor* cursor;
 
 bool isNewlineNeeded;
 
@@ -47,6 +48,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
     SDL_StartTextInput(window);
 
     block = tb_CreateBlock();
+    cursor = tb_CreateCursor(100, 100);
 
     return SDL_APP_CONTINUE;
 }
@@ -87,7 +89,9 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     SDL_RenderClear(renderer);
 
-    tb_RenderBlock(block, preGapTexts, postGapTexts);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+    tb_RenderBlock(renderer, block, cursor, textEngine, font, preGapTexts, postGapTexts);
 
     SDL_RenderPresent(renderer);
 
