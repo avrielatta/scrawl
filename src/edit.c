@@ -11,24 +11,34 @@ bool input_HandleTextInput(const char *input, TextBlock* block) {
         LineBuffer* buf = block->lines[block->lineCount - 1];
 
         // if we are under capacity
-        if (buf->gapIndex < buf->gapEnd) {
+        if (buf->gapIndex < buf->gapEnd - 1) {
             lb_AddChar(buf, input);
             return true;
+        } else {
+            // create a new line
+            tb_NewLine(block);
+            lb_AddChar(block->lines[block->lineCount - 1], input);
+            return false;
         }
     } else {
-        tb_NewLine(block, input);
-        return false;
+        tb_NewLine(block);
+        lb_AddChar(block->lines[block->lineCount - 1], input);
+        return true;
     }
 }
 
-void input_HandleKeyDown(SDL_KeyboardEvent event, LineBuffer *buffer) {
-    if (event.key == SDLK_BACKSPACE && !(buffer->gapIndex == 0)) {
+void input_HandleKeyDown(SDL_KeyboardEvent event, TextBlock* block) {
+    LineBuffer* buffer = block->lines[block->lineCount - 1];
+
+    if (event.key == SDLK_BACKSPACE) {
         lb_Backspace(buffer);
-    } else if (event.key == SDLK_LEFT && buffer->gapIndex != 0) {
+    } else if (event.key == SDLK_LEFT) {
         lb_Left(buffer);
-    } else if (event.key == SDLK_RIGHT && buffer->gapIndex <= buffer->gapEnd) {
+    } else if (event.key == SDLK_RIGHT) {
         lb_Right(buffer);
-    } else if (event.key == SDLK_DELETE && buffer->gapEnd < buffer->capacity - 2) {
+    } else if (event.key == SDLK_DELETE) {
         lb_Delete(buffer);
+    } else if (event.key == SDLK_RETURN) {
+        tb_NewLine(block);
     }
 }

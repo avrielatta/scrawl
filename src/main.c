@@ -64,15 +64,13 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
         if (event->key.key == SDLK_ESCAPE) {
             return SDL_APP_SUCCESS;
         } else {
-            input_HandleKeyDown(event->key, block->lines[block->lineCount - 1]);
+            input_HandleKeyDown(event->key, block);
         }
     }
 
-    if (isNewlineNeeded) {
-
-    } else {
-        for (int i = 0; i < block->lineCount; i++) {
-            // create pregap text object
+    for (int i = 0; i < block->lineCount; i++) {
+        // create pregap text object
+        if (block->lines[i]->preGapWidth > 0) {
             TTF_DestroyText(preGapTexts[i]);
             preGapTexts[i] = TTF_CreateText(
                     textEngine,
@@ -80,8 +78,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
                     block->lines[i]->buf,
                     block->lines[i]->preGapWidth
             );
+        }
 
-            // create post-gap text object
+        // create post-gap text object
+        if (block->lines[i]->postGapWidth > 0) {
             TTF_DestroyText(postGapTexts[i]);
             postGapTexts[i] = TTF_CreateText(
                     textEngine,
@@ -116,12 +116,14 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     SDL_RenderClear(renderer);
 
     for (int i = 0; i < block->lineCount; i++) {
-        // calculate width of the first section of text
-        TTF_GetTextSize(preGapTexts[i], &currentTextWidth, NULL);
-        // draw pre-gap text
-        TTF_DrawRendererText(preGapTexts[i], 0, i * FONT_SIZE);
-        // draw post-gap text
-        TTF_DrawRendererText(postGapTexts[i], currentTextWidth + 1, i * FONT_SIZE);
+        if (block->lines[i]->preGapWidth > 0) {
+            // calculate width of the first section of text
+            TTF_GetTextSize(preGapTexts[i], &currentTextWidth, NULL);
+            // draw pre-gap text
+            TTF_DrawRendererText(preGapTexts[i], 0, i * FONT_SIZE);
+            // draw post-gap text
+            TTF_DrawRendererText(postGapTexts[i], currentTextWidth + 1, i * FONT_SIZE);
+        }
     }
 
     SDL_RenderPresent(renderer);

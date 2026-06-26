@@ -11,4 +11,4 @@ typedef struct TextBlock {
 } TextBlock;
 
 TextBlock* tb_CreateBlock(void);
-void tb_NewLine(TextBlock *block, const char* input);
+void tb_NewLine(TextBlock *block);

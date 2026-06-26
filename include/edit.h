@@ -14,4 +14,4 @@ typedef enum e_VimMode {
  * had enough space to add a character
  */
 bool input_HandleTextInput(const char *input, TextBlock* block);
-void input_HandleKeyDown(SDL_KeyboardEvent event, LineBuffer *buffer);
+void input_HandleKeyDown(SDL_KeyboardEvent event, TextBlock* block);

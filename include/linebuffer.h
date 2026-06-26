@@ -3,7 +3,6 @@
 
 #define BUFFER_CAP 64
 #define EMPTY '_'
-#define CURSOR '#'
 
 typedef struct LineBuffer {
     int gapIndex, gapEnd, capacity;
