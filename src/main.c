@@ -6,6 +6,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include "animation.h"
 #include "txt.h"
 #include "edit.h"
 #include "types.h"
@@ -14,6 +15,8 @@
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+
+Timer* timer;
 
 TTF_Font *font;
 TTF_Text* preGapTexts[MAX_BLOCK_LINES];
@@ -38,6 +41,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
     }
     SDL_SetRenderLogicalPresentation(renderer, 1920, 1080, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
+    timer = anim_CreateTimer(60);
+
     font = txt_FontInit();
     if (font == NULL) {
         return SDL_APP_FAILURE;
@@ -48,7 +53,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
     SDL_StartTextInput(window);
 
     block = tb_CreateBlock();
-    cursor = tb_CreateCursor(100, 100);
+    cursor = tb_CreateCursor(1, 18);
 
     return SDL_APP_CONTINUE;
 }
@@ -85,6 +90,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) {
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate) {
+    anim_UpdateTimer(timer);
+
     SDL_SetRenderDrawColorFloat(renderer, 0.0f, 0.0f, 0.0f, SDL_ALPHA_OPAQUE_FLOAT);
 
     SDL_RenderClear(renderer);
