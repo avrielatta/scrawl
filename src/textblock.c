@@ -5,11 +5,24 @@
 #include "linebuffer.h"
 #include "txt.h"
 
+/* CURSOR DECLARATIONS */
+Cursor* CreateCursor(float w, float h);
+void DestroyCursor(Cursor* cursor);
+void RenderCursor(SDL_Renderer* renderer, Cursor* cursor, int xPos, TextBlock* block);
+
+/* TEXT BLOCK DEFINITIONS */
+
 TextBlock* tb_CreateBlock(void) {
     TextBlock *newBlock = malloc(sizeof(TextBlock));
     newBlock->pos = (Vec2){ 0, 0 };
     newBlock->lineCount = 0;
+    newBlock->cursor = CreateCursor(1, 18);
     return newBlock;
+}
+
+void tb_DestroyBlock(TextBlock* block) {
+    DestroyCursor(block->cursor);
+    free(block);
 }
 
 void tb_NewLine(TextBlock *block) {
@@ -61,6 +74,13 @@ int tb_RenderBlockText(TextBlock* block, TTF_Text* preGapTexts[], TTF_Text* post
             TTF_DrawRendererText(preGapTexts[i], 0, i * FONT_SIZE);
             // draw post-gap text
             TTF_DrawRendererText(postGapTexts[i], currentTextWidth, i * FONT_SIZE);
+        } else {
+            /* this is necessary bc, without it, currentTextWidth
+             * will maintain the value of lineCount-1's width,
+             * thus drawing the cursor at the correct y-level
+             * but at the x-pos of the end of the previous line
+             */
+            currentTextWidth = 0;
         }
     }
 
@@ -70,19 +90,18 @@ int tb_RenderBlockText(TextBlock* block, TTF_Text* preGapTexts[], TTF_Text* post
 void tb_RenderBlock(
         SDL_Renderer* renderer,
         TextBlock* block,
-        Cursor* cursor,
         TTF_TextEngine* engine,
         TTF_Font* font,
         TTF_Text* preGapTexts[],
         TTF_Text* postGapTexts[]
 ) {
     int cursorX = tb_RenderBlockText(block, preGapTexts, postGapTexts);
-    tb_RenderCursor(renderer, cursor, cursorX, block);
+    RenderCursor(renderer, block->cursor, cursorX, block);
 }
 
-/* CURSOR FUNCTIONS */
+/* CURSOR DEFINITIONS */
 
-Cursor* tb_CreateCursor(float w, float h) {
+Cursor* CreateCursor(float w, float h) {
     Cursor* newCursor = malloc(sizeof(Cursor));
     newCursor->rect.x = 0.0f;
     newCursor->rect.y = 0.0f;
@@ -92,11 +111,12 @@ Cursor* tb_CreateCursor(float w, float h) {
     return newCursor;
 }
 
-void tb_DestroyCursor(Cursor* cursor) {
+void DestroyCursor(Cursor* cursor) {
     free(cursor);
 }
 
-void tb_RenderCursor(SDL_Renderer* renderer, Cursor* cursor, int xPos, TextBlock* block) {
+void RenderCursor(SDL_Renderer* renderer, Cursor* cursor, int xPos, TextBlock* block) {
     cursor->rect.x = xPos;
+    cursor->rect.y = (block->lineCount - 1) * (cursor->rect.h - 2);
     SDL_RenderRect(renderer, &cursor->rect);
 }

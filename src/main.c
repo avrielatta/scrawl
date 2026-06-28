@@ -9,7 +9,6 @@
 #include "animation.h"
 #include "txt.h"
 #include "edit.h"
-#include "types.h"
 #include "linebuffer.h"
 #include "textblock.h"
 
@@ -23,7 +22,6 @@ TTF_Text* preGapTexts[MAX_BLOCK_LINES];
 TTF_Text* postGapTexts[MAX_BLOCK_LINES];
 TTF_TextEngine *textEngine;
 TextBlock *block;
-Cursor* cursor;
 
 bool isNewlineNeeded;
 
@@ -53,7 +51,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *arg[]) {
     SDL_StartTextInput(window);
 
     block = tb_CreateBlock();
-    cursor = tb_CreateCursor(1, 18);
 
     return SDL_APP_CONTINUE;
 }
@@ -98,7 +95,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-    tb_RenderBlock(renderer, block, cursor, textEngine, font, preGapTexts, postGapTexts);
+    tb_RenderBlock(renderer, block, textEngine, font, preGapTexts, postGapTexts);
 
     SDL_RenderPresent(renderer);
 
@@ -114,6 +111,8 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     for (int i = 0; i < block->lineCount; i++) {
         lb_DestroyBuffer(block->lines[i]);
     }
+
+    tb_DestroyBlock(block);
 
     TTF_CloseFont(font);
     TTF_Quit();
