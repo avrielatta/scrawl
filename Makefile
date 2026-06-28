@@ -18,13 +18,15 @@ CFLAGS_RELEASE	= -O3 -march=native -flto=auto -fno-plt -fomit-frame-pointer
 CFLAGS_DEBUG	= -O0 -g3 -ggdb3 -fno-strict-aliasing -fstack-protector-strong \
 				  -DDEBUG -fno-omit-frame-pointer
 
-INC_FLAGS		= -Iinclude
+INC_FLAGS		= -Iinclude -I$(LUA_DIR)/include
 
-LDLIBS_BASE		= -lm
+LDLIBS_BASE		= -lm -L$(LUA_DIR)/lua -llua -ldl
 
 LDLIBS_RELEASE	= -flto
 
 LDLIBS_DEBUG	=
+
+LUA_DIR = $(CURDIR)/lib/lua
 
 SRCS			= $(wildcard $(SRC_DIR)/*.c)
 OBJS			= $(addprefix $(BUILD_DIR)/, $(notdir $(SRCS:.c=.o)))
@@ -60,7 +62,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INC_FLAGS) -MMD -MP -c $< -o $@
 
 $(TARGET): $(OBJS)
-	$(CC) -fsanitize=address $(LDLIBS) $^ -o $@
+	$(CC) $(LDLIBS) $^ -o $@
 
 -include $(DEPS)
 
